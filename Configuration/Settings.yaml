@@ -1,0 +1,15 @@
+Yeebase:
+  SEO:
+    Routing:
+      redirect:
+        enable: TRUE
+        statusCode: 303
+
+Neos:
+  Flow:
+    http:
+      chain:
+        process:
+          chain:
+            routing:
+              component: 'Yeebase\SEO\Routing\RoutingComponent'

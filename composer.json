@@ -1,0 +1,18 @@
+{
+    "description": "",
+    "type": "neos-yeebase",
+    "name": "yeebase/seo-routing",
+    "require": {
+        "neos/flow": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Yeebase\\SEO\\Routing\\": "Classes/"
+        }
+    },
+    "extra": {
+        "neos": {
+            "package-key": "Yeebase.SEO.Routing"
+        }
+    }
+}

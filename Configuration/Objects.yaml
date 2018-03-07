@@ -1,0 +1,2 @@
+Neos\Flow\Mvc\Routing\RouterInterface:
+  className: Yeebase\SEO\Routing\Router
