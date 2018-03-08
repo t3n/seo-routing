@@ -33,14 +33,17 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
         $uri = $componentContext->getHttpRequest()->getUri();
 
         if ($this->configuration['enable'] === true && $uri->getPath()[-1] !== '/') {
-            $uri->setPath($uri->getPath() . '/');
-            $response = $componentContext->getHttpResponse();
-            $response->setStatus($this->configuration['statusCode']);
-            $response->setHeader('Location', (string) $uri);
-            $componentContext->setParameter(ComponentChain::class, 'cancel', true);
-        } else {
-            parent::handle($componentContext);
+            $info = pathinfo($uri);
+            if (!isset($info['extension'])) {
+                $uri->setPath($uri->getPath() . '/');
+                $response = $componentContext->getHttpResponse();
+                $response->setStatus($this->configuration['statusCode']);
+                $response->setHeader('Location', (string) $uri);
+                $componentContext->setParameter(ComponentChain::class, 'cancel', true);
+                return;
+            }
         }
 
+        parent::handle($componentContext);
     }
 }

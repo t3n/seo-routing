@@ -3,7 +3,7 @@
     "type": "neos-yeebase",
     "name": "yeebase/seo-routing",
     "require": {
-        "neos/flow": "*"
+        "neos/flow": "^3.3"
     },
     "autoload": {
         "psr-4": {
