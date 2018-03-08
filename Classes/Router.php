@@ -18,9 +18,14 @@ class Router extends \Neos\Flow\Mvc\Routing\Router
         /** @var Uri $uri */
         $uri = parent::resolve($resolveContext);
 
-        // $uri needs to be reparsed, bc the path often often contains the query
-        $parsedUri = new Uri((string) $uri);
-        $parsedUri->setPath(rtrim($parsedUri->getPath(), '/') . '/');
-        return $parsedUri;
+        $info = pathinfo($uri);
+        if (!isset($info['extension'])) {
+            // $uri needs to be reparsed, bc the path often often contains the query
+            $parsedUri = new Uri((string)$uri);
+            $parsedUri->setPath(rtrim($parsedUri->getPath(), '/') . '/');
+            return $parsedUri;
+        }
+
+        return $uri;
     }
 }
