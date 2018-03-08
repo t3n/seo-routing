@@ -20,7 +20,7 @@ class Router extends \Neos\Flow\Mvc\Routing\Router
 
         $info = pathinfo($uri);
         if (!isset($info['extension'])) {
-            // $uri needs to be reparsed, bc the path often often contains the query
+            // $uri needs to be reparsed, because the path often contains the query
             $parsedUri = new Uri((string)$uri);
             $parsedUri->setPath(rtrim($parsedUri->getPath(), '/') . '/');
             return $parsedUri;
