@@ -1,6 +1,7 @@
 {
     "description": "",
     "type": "neos-yeebase",
+    "license": "MIT",
     "name": "yeebase/seo-routing",
     "require": {
         "neos/flow": "~4.3.0"
