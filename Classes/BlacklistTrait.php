@@ -2,7 +2,7 @@
 namespace Yeebase\SEO\Routing;
 
 /**
- * This file is part of the Yeebase.Readiness package.
+ * This file is part of the Yeebase.SEO.Routing package.
  *
  * (c) 2018 yeebase media GmbH
  *
