@@ -2,7 +2,7 @@
 namespace Yeebase\SEO\Routing;
 
 /**
- * This file is part of the Yeebase.Readiness package.
+ * This file is part of the Yeebase.SEO.Routing package.
  *
  * (c) 2018 yeebase media GmbH
  *
@@ -17,6 +17,8 @@ use Psr\Http\Message\UriInterface;
 
 class Router extends \Neos\Flow\Mvc\Routing\Router
 {
+    use BlacklistTrait;
+
     /**
      * Resolves the current uri and ensures that a trailing slash is present
      *
@@ -28,8 +30,7 @@ class Router extends \Neos\Flow\Mvc\Routing\Router
         /** @var Uri $uri */
         $uri = parent::resolve($resolveContext);
 
-        $info = pathinfo($uri);
-        if (!isset($info['extension'])) {
+        if ($this->matchesBlacklist($uri) === false && isset(pathinfo($uri)['extension']) === false) {
             // $uri needs to be reparsed, because the path often contains the query
             $parsedUri = new Uri((string)$uri);
             $parsedUri->setPath(rtrim($parsedUri->getPath(), '/') . '/');

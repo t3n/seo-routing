@@ -4,6 +4,8 @@ Yeebase:
       redirect:
         enable: TRUE
         statusCode: 303
+      blacklist:
+        '/neos/.*': TRUE
 
 Neos:
   Flow:
