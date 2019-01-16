@@ -2,10 +2,10 @@ Yeebase:
   SEO:
     Routing:
       redirect:
-        enable: TRUE
+        enable: true
         statusCode: 303
       blacklist:
-        '/neos/.*': TRUE
+        '/neos/.*': true
 
 Neos:
   Flow:

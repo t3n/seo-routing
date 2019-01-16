@@ -3,8 +3,14 @@
     "type": "neos-yeebase",
     "license": "MIT",
     "name": "yeebase/seo-routing",
+    "config": {
+        "bin-dir": "bin"
+    },
     "require": {
         "neos/flow": "~4.3 || ~5.0"
+    },
+    "require-dev": {
+        "t3n/coding-standard": "dev-master"
     },
     "autoload": {
         "psr-4": {

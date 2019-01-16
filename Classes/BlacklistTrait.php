@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Yeebase\SEO\Routing;
 
 /**
@@ -18,14 +21,11 @@ trait BlacklistTrait
 {
     /**
      * @Flow\InjectConfiguration(package="Yeebase.SEO.Routing", path="blacklist")
-     * @var array
+     *
+     * @var mixed[]
      */
     protected $blacklist;
 
-    /**
-     * @param UriInterface $uri
-     * @return bool
-     */
     protected function matchesBlacklist(UriInterface $uri): bool
     {
         $path = $uri->getPath();

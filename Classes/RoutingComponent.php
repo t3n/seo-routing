@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Yeebase\SEO\Routing;
 
 /**
@@ -25,22 +28,22 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
      * so it has to be overwritten here
      *
      * @Flow\Inject
+     *
      * @var RouterInterface
      */
     protected $router;
 
     /**
      * @Flow\InjectConfiguration("redirect")
-     * @var array
+     *
+     * @var mixed[]
      */
     protected $configuration;
 
     /**
      * Redirect automatically to the trailing slash url
-     *
-     * @param ComponentContext $componentContext
      */
-    public function handle(ComponentContext $componentContext)
+    public function handle(ComponentContext $componentContext): void
     {
         $uri = $componentContext->getHttpRequest()->getUri();
         $path = $uri->getPath();
