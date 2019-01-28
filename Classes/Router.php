@@ -27,14 +27,12 @@ class Router extends \Neos\Flow\Mvc\Routing\Router
      */
     public function resolve(ResolveContext $resolveContext): UriInterface
     {
-        /** @var Uri $uri */
         $uri = parent::resolve($resolveContext);
 
-        if ($this->matchesBlacklist($uri) === false && isset(pathinfo($uri)['extension']) === false) {
-            // $uri needs to be reparsed, because the path often contains the query
+        if ($this->matchesBlacklist($uri) === false && isset(pathinfo((string) $uri)['extension']) === false) {
+            // $uri needs to be re-parsed, because the path often contains the query
             $parsedUri = new Uri((string) $uri);
-            $parsedUri->setPath(rtrim($parsedUri->getPath(), '/') . '/');
-            return $parsedUri;
+            return $parsedUri->withPath(rtrim($parsedUri->getPath(), '/') . '/');
         }
 
         return $uri;
