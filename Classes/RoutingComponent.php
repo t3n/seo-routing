@@ -24,7 +24,7 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
     use BlacklistTrait;
 
     /**
-     * The original routing component uses the concret router, not the interface
+     * The original routing component uses the concrete router, not the interface
      * so it has to be overwritten here
      *
      * @Flow\Inject
@@ -49,11 +49,13 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
         $path = $uri->getPath();
 
         if ($this->configuration['enable'] === true && $path[-1] !== '/') {
-            if ($this->matchesBlacklist($uri) === false && isset(pathinfo($uri)['extension']) === false) {
-                $uri->setPath($path . '/');
-                $response = $componentContext->getHttpResponse();
-                $response->setStatus($this->configuration['statusCode']);
-                $response->setHeader('Location', (string) $uri);
+            if ($this->matchesBlacklist($uri) === false && isset(pathinfo((string) $uri)['extension']) === false) {
+                $newUri = $uri->withPath($path . '/');
+                $newResponse = $componentContext->getHttpResponse()
+                    ->withStatus($this->configuration['statusCode'])
+                    ->withHeader('Location', (string) $newUri);
+
+                $componentContext->replaceHttpResponse($newResponse);
                 $componentContext->setParameter(ComponentChain::class, 'cancel', true);
                 return;
             }
