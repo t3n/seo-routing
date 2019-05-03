@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Yeebase\SEO\Routing;
+namespace t3n\SEO\Routing;
 
 /**
- * This file is part of the Yeebase.SEO.Routing package.
+ * This file is part of the t3n.SEO.Routing package.
  *
  * (c) 2018 yeebase media GmbH
  *

@@ -1,4 +1,4 @@
-Yeebase:
+t3n:
   SEO:
     Routing:
       redirect:
@@ -14,4 +14,4 @@ Neos:
         process:
           chain:
             routing:
-              component: 'Yeebase\SEO\Routing\RoutingComponent'
+              component: 't3n\SEO\Routing\RoutingComponent'

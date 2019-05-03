@@ -1,2 +1,2 @@
 Neos\Flow\Mvc\Routing\RouterInterface:
-  className: Yeebase\SEO\Routing\Router
+  className: t3n\SEO\Routing\Router
