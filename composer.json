@@ -1,8 +1,8 @@
 {
-    "description": "",
-    "type": "neos-yeebase",
+    "description": "Flow Framework Router to ensure a trailing slash",
+    "type": "neos-package",
     "license": "MIT",
-    "name": "yeebase/seo-routing",
+    "name": "t3n/seo-routing",
     "config": {
         "bin-dir": "bin"
     },
@@ -10,16 +10,16 @@
         "neos/flow": "~4.3 || ~5.0"
     },
     "require-dev": {
-        "t3n/coding-standard": "dev-master"
+        "t3n/coding-standard": "~1.0.0"
     },
     "autoload": {
         "psr-4": {
-            "Yeebase\\SEO\\Routing\\": "Classes/"
+            "t3n\\SEO\\Routing\\": "Classes/"
         }
     },
     "extra": {
         "neos": {
-            "package-key": "Yeebase.SEO.Routing"
+            "package-key": "t3n.SEO.Routing"
         }
     }
 }
