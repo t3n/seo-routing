@@ -17,10 +17,7 @@ namespace t3n\SEO\Routing;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Http\Component\ComponentChain;
 use Neos\Flow\Http\Component\ComponentContext;
-use Neos\Flow\Http\Response;
-use Neos\Flow\Http\Uri;
 use Neos\Flow\Mvc\Routing\RouterInterface;
-use Psr\Http\Message\UriInterface;
 
 class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
 {
@@ -45,14 +42,11 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
 
     /**
      * Redirect automatically to the trailing slash url or lowered url if activated
-     *
-     * @param ComponentContext $componentContext
      */
     public function handle(ComponentContext $componentContext): void
     {
-        $isEnabled = $this->configuration['enable'];
+        $isEnabled = $this->configuration['enable'] === true;
 
-        /** @var Uri $uri */
         $uri = $componentContext->getHttpRequest()->getUri();
         $path = $uri->getPath();
 
@@ -66,7 +60,7 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
 
         $loweredPath = strtolower($path);
 
-        if ($isEnabled && $this->configuration['toLowerCase'] && $path !== $loweredPath) {
+        if ($isEnabled && $this->configuration['toLowerCase'] === true && $path !== $loweredPath) {
             $uri->setPath($loweredPath);
             $this->redirectToUri($componentContext, $uri);
             return;
