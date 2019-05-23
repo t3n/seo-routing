@@ -4,6 +4,7 @@ t3n:
       redirect:
         enable: true
         statusCode: 303
+        toLowerCase: false
       blacklist:
         '/neos/.*': true
 

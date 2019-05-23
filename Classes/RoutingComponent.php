@@ -17,7 +17,10 @@ namespace t3n\SEO\Routing;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Http\Component\ComponentChain;
 use Neos\Flow\Http\Component\ComponentContext;
+use Neos\Flow\Http\Response;
+use Neos\Flow\Http\Uri;
 use Neos\Flow\Mvc\Routing\RouterInterface;
+use Psr\Http\Message\UriInterface;
 
 class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
 {
@@ -41,26 +44,43 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
     protected $configuration;
 
     /**
-     * Redirect automatically to the trailing slash url
+     * Redirect automatically to the trailing slash url or lowered url if activated
+     *
+     * @param ComponentContext $componentContext
      */
     public function handle(ComponentContext $componentContext): void
     {
+        $isEnabled = $this->configuration['enable'];
+
+        /** @var Uri $uri */
         $uri = $componentContext->getHttpRequest()->getUri();
         $path = $uri->getPath();
 
-        if ($this->configuration['enable'] === true && $path[-1] !== '/') {
-            if ($this->matchesBlacklist($uri) === false && isset(pathinfo((string) $uri)['extension']) === false) {
-                $newUri = $uri->withPath($path . '/');
-                $newResponse = $componentContext->getHttpResponse()
-                    ->withStatus($this->configuration['statusCode'])
-                    ->withHeader('Location', (string) $newUri);
-
-                $componentContext->replaceHttpResponse($newResponse);
-                $componentContext->setParameter(ComponentChain::class, 'cancel', true);
+        if ($isEnabled === true && $path[-1] !== '/') {
+            if ($this->matchesBlacklist($uri) === false && isset(pathinfo($uri)['extension']) === false) {
+                $uri->setPath($path . '/');
+                $this->redirectToUri($componentContext, $uri);
                 return;
             }
         }
 
+        $loweredPath = strtolower($path);
+
+        if ($isEnabled && $this->configuration['toLowerCase'] && $path !== $loweredPath) {
+            $uri->setPath($loweredPath);
+            $this->redirectToUri($componentContext, $uri);
+            return;
+        }
+
         parent::handle($componentContext);
+    }
+
+    protected function redirectToUri(ComponentContext $componentContext, string $uri): void
+    {
+        $response = $componentContext->getHttpResponse();
+        $response->setStatus($this->configuration['statusCode']);
+        $response->setHeader('Location', (string) $uri);
+
+        $componentContext->setParameter(ComponentChain::class, 'cancel', true);
     }
 }
