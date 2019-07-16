@@ -24,7 +24,8 @@
   },
   "require-dev": {
     "t3n/coding-standard": "~1.0.0",
-    "phpunit/phpunit": "~7.1"
+    "phpunit/phpunit": "~7.1",
+    "mikey179/vfsstream": "~1.6"
   },
   "scripts": {
     "post-update-cmd": "Neos\\Flow\\Composer\\InstallerScripts::postUpdateAndInstall",

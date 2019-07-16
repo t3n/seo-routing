@@ -40,6 +40,7 @@ jobs:
           shopt -u dotglob
           cp seo-routing/composer.json.ci composer.json
           cp seo-routing/phpcs.xml.dist phpcs.xml.dist
+          cp seo-routing/unitTests.xml unitTests.xml
           composer update
       - save_cache: *save_composer_cache
       - persist_to_workspace: *persist_to_workspace

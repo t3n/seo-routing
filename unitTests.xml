@@ -9,7 +9,7 @@
         timeoutForSmallTests="0">
     <testsuites>
         <testsuite name="seo-routing">
-            <directory>Tests</directory>
+            <directory>seo-routing/Tests/Unit</directory>
         </testsuite>
     </testsuites>
 </phpunit>
