@@ -85,7 +85,7 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
         }
     }
 
-    protected function redirectToUri(ComponentContext $componentContext, string $uri): void
+    protected function redirectToUri(ComponentContext $componentContext, UriInterface $uri): void
     {
         $response = $componentContext->getHttpResponse();
         $response->setStatus($this->configuration['statusCode']);
