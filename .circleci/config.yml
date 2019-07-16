@@ -52,11 +52,22 @@ jobs:
       - attach_workspace: *attach_workspace
       - run: bin/phpcs seo-routing/Classes
 
+  unit-tests:
+    working_directory: *workspace_root
+    docker:
+      - image: *ci-build-image
+    steps:
+      - attach_workspace: *attach_workspace
+      - run: bin/phpunit -c unitTests.xml
+
 workflows:
   version: 2
   build_and_test:
     jobs:
       - checkout
       - lint:
+          requires:
+            - checkout
+      - unit-tests:
           requires:
             - checkout
