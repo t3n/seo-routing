@@ -31,6 +31,6 @@
     "post-install-cmd": "Neos\\Flow\\Composer\\InstallerScripts::postUpdateAndInstall",
     "post-package-update": "Neos\\Flow\\Composer\\InstallerScripts::postPackageUpdateAndInstall",
     "post-package-install": "Neos\\Flow\\Composer\\InstallerScripts::postPackageUpdateAndInstall",
-    "code-style": "bin/phpcs neos-form",
+    "code-style": "bin/phpcs neos-form"
   }
 }
