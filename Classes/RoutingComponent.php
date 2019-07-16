@@ -18,6 +18,7 @@ use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Http\Component\ComponentChain;
 use Neos\Flow\Http\Component\ComponentContext;
 use Neos\Flow\Mvc\Routing\RouterInterface;
+use Psr\Http\Message\UriInterface;
 
 class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
 {
@@ -41,40 +42,80 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
     protected $configuration;
 
     /**
+     * @param mixed[] $options
+     */
+    public function __construct(array $options = [])
+    {
+        parent::__construct($options);
+
+        if (! is_array($this->configuration)) {
+            $this->configuration = [];
+        }
+    }
+
+    /**
      * Redirect automatically to the trailing slash url or lowered url if activated
      */
     public function handle(ComponentContext $componentContext): void
     {
-        $isEnabled = $this->configuration['enable'] === true;
+        $trailingSlashIsEnabled = isset($this->configuration['enable']['trailingSlash']) ? $this->configuration['enable']['trailingSlash'] === true : false;
+        $toLowerCaseIsEnabled = isset($this->configuration['enable']['toLowerCase']) ? $this->configuration['enable']['toLowerCase'] === true : false;
 
         $uri = $componentContext->getHttpRequest()->getUri();
-        $path = $uri->getPath();
+        $oldPath = $uri->getPath();
 
-        if ($isEnabled === true && $path[-1] !== '/') {
-            if ($this->matchesBlacklist($uri) === false && isset(pathinfo($uri)['extension']) === false) {
-                $uri->setPath($path . '/');
-                $this->redirectToUri($componentContext, $uri);
-                return;
-            }
+        if ($trailingSlashIsEnabled) {
+            $uri = $this->handleTrailingSlash($uri);
         }
 
-        $loweredPath = strtolower($path);
-
-        if ($isEnabled && $this->configuration['toLowerCase'] === true && $path !== $loweredPath) {
-            $uri->setPath($loweredPath);
-            $this->redirectToUri($componentContext, $uri);
-            return;
+        if ($toLowerCaseIsEnabled) {
+            $uri = $this->handleToLowerCase($uri);
         }
+
+        $this->redirectIfNecessary($componentContext, $uri, $oldPath);
 
         parent::handle($componentContext);
     }
 
-    protected function redirectToUri(ComponentContext $componentContext, string $uri): void
+    public function handleTrailingSlash(UriInterface $uri): UriInterface
     {
+        if (strlen($uri->getPath()) === 0 || $uri->getPath()[-1] === '/') {
+            return $uri;
+        }
+
+        if ($this->matchesBlacklist($uri) === false && ! array_key_exists('extension', pathinfo($uri->getPath()))) {
+            $uri->setPath($uri->getPath() . '/');
+        }
+
+        return $uri;
+    }
+
+    public function handleToLowerCase(UriInterface $uri): UriInterface
+    {
+        $loweredPath = strtolower($uri->getPath());
+
+        if ($uri->getPath() !== $loweredPath) {
+            $uri->setPath($loweredPath);
+        }
+
+        return $uri;
+    }
+
+    protected function redirectIfNecessary(ComponentContext $componentContext, UriInterface $uri, string $oldPath): void
+    {
+        if ($uri->getPath() === $oldPath) {
+            return;
+        }
+
+        //set default redirect statusCode if configuration is not set
+        $statusCode = array_key_exists('statusCode', $this->configuration) ? $this->configuration['statusCode'] : 301;
+
         $response = $componentContext->getHttpResponse();
-        $response->setStatus($this->configuration['statusCode']);
-        $response->setHeader('Location', (string) $uri);
+        $response->withStatus((int) $statusCode);
+        $response->withHeader('Location', (string) $uri);
 
         $componentContext->setParameter(ComponentChain::class, 'cancel', true);
+
+        return;
     }
 }
