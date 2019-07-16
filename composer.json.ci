@@ -33,5 +33,10 @@
     "post-package-update": "Neos\\Flow\\Composer\\InstallerScripts::postPackageUpdateAndInstall",
     "post-package-install": "Neos\\Flow\\Composer\\InstallerScripts::postPackageUpdateAndInstall",
     "code-style": "bin/phpcs neos-form"
+  },
+    "autoload": {
+      "psr-4": {
+      "t3n\\SEO\\Routing\\": "seo-routing/Classes/"
+    }
   }
 }
