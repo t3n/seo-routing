@@ -2,9 +2,10 @@ t3n:
   SEO:
     Routing:
       redirect:
-        enable: true
-        statusCode: 303
-        toLowerCase: false
+        enable:
+          trailingSlash: true
+          toLowerCase: false
+        statusCode: 301
       blacklist:
         '/neos/.*': true
 

@@ -18,6 +18,7 @@ use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Http\Component\ComponentChain;
 use Neos\Flow\Http\Component\ComponentContext;
 use Neos\Flow\Mvc\Routing\RouterInterface;
+use Psr\Http\Message\UriInterface;
 
 class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
 {
@@ -45,28 +46,43 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
      */
     public function handle(ComponentContext $componentContext): void
     {
-        $isEnabled = $this->configuration['enable'] === true;
+        $trailingSlashIsEnabled = $this->configuration['enable']['trailingSlash'] === true;
+        $toLowerCaseIsEnabled = $this->configuration['enable']['toLowerCase'] === true;
 
         $uri = $componentContext->getHttpRequest()->getUri();
         $path = $uri->getPath();
 
-        if ($isEnabled === true && $path[-1] !== '/') {
-            if ($this->matchesBlacklist($uri) === false && isset(pathinfo($uri)['extension']) === false) {
-                $uri->setPath($path . '/');
-                $this->redirectToUri($componentContext, $uri);
-                return;
-            }
+        if ($trailingSlashIsEnabled) {
+            $this->handleTrailingSlash($componentContext, $uri, $path);
         }
 
-        $loweredPath = strtolower($path);
-
-        if ($isEnabled && $this->configuration['toLowerCase'] === true && $path !== $loweredPath) {
-            $uri->setPath($loweredPath);
-            $this->redirectToUri($componentContext, $uri);
-            return;
+        if ($toLowerCaseIsEnabled) {
+            $this->handleToLowerCase($componentContext, $uri, $path);
         }
 
         parent::handle($componentContext);
+    }
+
+    protected function handleTrailingSlash(ComponentContext $componentContext, UriInterface $uri, string $path): void
+    {
+        if ($path[-1] === '/') {
+            return;
+        }
+
+        if ($this->matchesBlacklist($uri) === false && isset(pathinfo($uri)['extension']) === false) {
+            $uri->setPath($path . '/');
+            $this->redirectToUri($componentContext, $uri);
+        }
+    }
+
+    protected function handleToLowerCase(ComponentContext $componentContext, UriInterface $uri, string $path): void
+    {
+        $loweredPath = strtolower($path);
+
+        if ($path !== $loweredPath) {
+            $uri->setPath($loweredPath);
+            $this->redirectToUri($componentContext, $uri);
+        }
     }
 
     protected function redirectToUri(ComponentContext $componentContext, string $uri): void
