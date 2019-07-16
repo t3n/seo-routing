@@ -28,7 +28,7 @@ trait BlacklistTrait
 
     protected function matchesBlacklist(UriInterface $uri): bool
     {
-        if (!is_array($this->blacklist)) {
+        if (! is_array($this->blacklist)) {
             return false;
         }
 

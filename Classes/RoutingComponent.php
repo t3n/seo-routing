@@ -71,7 +71,7 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
             return $uri;
         }
 
-        if ($this->matchesBlacklist($uri) === false && !array_key_exists('extension', pathinfo($uri->getPath()))) {
+        if ($this->matchesBlacklist($uri) === false && ! array_key_exists('extension', pathinfo($uri->getPath()))) {
             $uri->setPath($uri->getPath() . '/');
         }
 
