@@ -41,6 +41,9 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
      */
     protected $configuration;
 
+    /**
+     * @param mixed[] $options
+     */
     public function __construct(array $options = [])
     {
         parent::__construct($options);
@@ -115,5 +118,4 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
 
         return true;
     }
-
 }
