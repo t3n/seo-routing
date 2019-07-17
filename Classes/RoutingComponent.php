@@ -55,7 +55,7 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
      */
     public function handle(ComponentContext $componentContext): void
     {
-        $trailingSlashIsEnabled = isset($this->configuration['enable']['trailingSlash']) ? $this->configuration['enable']['trailingSlash'] === true : true;
+        $trailingSlashIsEnabled = isset($this->configuration['enable']['trailingSlash']) ? $this->configuration['enable']['trailingSlash'] === true : false;
         $toLowerCaseIsEnabled = isset($this->configuration['enable']['toLowerCase']) ? $this->configuration['enable']['toLowerCase'] === true : false;
 
         $uri = $componentContext->getHttpRequest()->getUri();
