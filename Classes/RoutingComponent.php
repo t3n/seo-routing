@@ -101,7 +101,7 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
         return $uri;
     }
 
-    protected function redirectIfNecessary(ComponentContext $componentContext, UriInterface $uri, string $oldPath)
+    protected function redirectIfNecessary(ComponentContext $componentContext, UriInterface $uri, string $oldPath): void
     {
         if ($uri->getPath() === $oldPath) {
             return;
