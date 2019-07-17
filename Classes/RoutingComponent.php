@@ -101,10 +101,10 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
         return $uri;
     }
 
-    public function redirectIfNecessary(ComponentContext $componentContext, UriInterface $uri, string $oldPath): bool
+    protected function redirectIfNecessary(ComponentContext $componentContext, UriInterface $uri, string $oldPath)
     {
         if ($uri->getPath() === $oldPath) {
-            return false;
+            return;
         }
 
         //set default redirect statusCode if configuration is not set
@@ -116,6 +116,6 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
 
         $componentContext->setParameter(ComponentChain::class, 'cancel', true);
 
-        return true;
+        return;
     }
 }

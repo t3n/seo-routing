@@ -8,20 +8,20 @@ use Neos\Flow\Http\Component\ComponentContext;
 use Neos\Flow\Http\Request;
 use Neos\Flow\Http\Response;
 use Neos\Flow\Http\Uri;
+use Neos\Flow\Mvc\Routing\Router;
 use Neos\Flow\Tests\UnitTestCase;
 use t3n\SEO\Routing\RoutingComponent;
 
 class RoutingComponentTest extends UnitTestCase
 {
-
     /**
      * @test
      */
-    public function uriWithSlashGetsNotModifiedForTrailingSlash()
+    public function uriWithSlashGetsNotModifiedForTrailingSlash(): void
     {
         $routingComponent = new RoutingComponent();
 
-        $uri    = new Uri('http://dev.local/testpath/');
+        $uri = new Uri('http://dev.local/testpath/');
         $newUri = $routingComponent->handleTrailingSlash($uri);
 
         $this->assertEquals($uri, $newUri);
@@ -30,24 +30,24 @@ class RoutingComponentTest extends UnitTestCase
     /**
      * @test
      */
-    public function uriWithOutSlashGetsModifiedForTrailingSlash()
+    public function uriWithOutSlashGetsModifiedForTrailingSlash(): void
     {
         $routingComponent = new RoutingComponent();
 
-        $uri    = new Uri('http://dev.local/testpath');
+        $uri = new Uri('http://dev.local/testpath');
         $newUri = $routingComponent->handleTrailingSlash($uri);
 
-        $this->assertStringEndsWith('/', (string)$newUri);
+        $this->assertStringEndsWith('/', (string) $newUri);
     }
 
     /**
      * @test
      */
-    public function uriWithLoweredPathGetsNotModified()
+    public function uriWithLoweredPathGetsNotModified(): void
     {
         $routingComponent = new RoutingComponent();
 
-        $uri    = new Uri('http://dev.local/testpath/');
+        $uri = new Uri('http://dev.local/testpath/');
         $newUri = $routingComponent->handleToLowerCase($uri);
 
         $this->assertEquals($uri, $newUri);
@@ -56,13 +56,13 @@ class RoutingComponentTest extends UnitTestCase
     /**
      * @test
      */
-    public function uriWithCamelCasePathGetsModifiedToLowereCase()
+    public function uriWithCamelCasePathGetsModifiedToLowereCase(): void
     {
         $routingComponent = new RoutingComponent();
 
         $camelCasePath = '/testPath/';
-        $uri           = new Uri('http://dev.local' . $camelCasePath);
-        $newUri        = $routingComponent->handleToLowerCase($uri);
+        $uri = new Uri('http://dev.local' . $camelCasePath);
+        $newUri = $routingComponent->handleToLowerCase($uri);
 
         $this->assertNotEquals($camelCasePath, $newUri->getPath());
         $this->assertEquals(strtolower($camelCasePath), $newUri->getPath());
@@ -71,11 +71,11 @@ class RoutingComponentTest extends UnitTestCase
     /**
      * @test
      */
-    public function uriWithSpecialCharsDoesNotThrowAnException()
+    public function uriWithSpecialCharsDoesNotThrowAnException(): void
     {
         $routingComponent = new RoutingComponent();
 
-        $uri    = new Uri('http://dev.local/äß&/');
+        $uri = new Uri('http://dev.local/äß&/');
         $newUri = $routingComponent->handleToLowerCase($uri);
         $newUri = $routingComponent->handleTrailingSlash($newUri);
 
@@ -85,36 +85,75 @@ class RoutingComponentTest extends UnitTestCase
     /**
      * @test
      */
-    public function ifPathHasNoChangesDoNotRedirect()
+    public function ifPathHasChangesRedirect(): void
     {
-        $httpRequest = new Request([], [], [], []);
-        $httpResponse = new Response();
-        $componentContext = new ComponentContext($httpRequest, $httpResponse);
+        $configuration = [
+            'enable' => [
+                'trailingSlash' => true,
+                'toLowerCase' => true
+            ],
+        ];
 
-        $oldUri = new Uri('http://dev.local/äß&/');
-        $newUri = new Uri('http://dev.local/äß&/');
+        $invalidPath = 'http://dev.local/invalidPath';
+        $validPath = 'http://dev.local/invalidpath/';
+
+        $httpRequest = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->setMethods(['getUri', 'withStatus'])->getMock();
+        $httpRequest->method('getUri')->willReturn(new Uri($invalidPath));
+
+        $httpResponse = $this->getMockBuilder(Response::class)->disableOriginalConstructor()->setMethods(['withStatus', 'withHeader'])->getMock();
+        $httpResponse->expects($this->once())->method('withStatus')->with(301);
+        $httpResponse->expects($this->once())->method('withHeader')->with('Location', $validPath);
+
+        /** @var ComponentContext $componentContext */
+        $componentContext = $this->getMockBuilder(ComponentContext::class)->disableOriginalConstructor()->setMethods(['getHttpRequest', 'getHttpResponse'])->getMock();
+        $componentContext->method('getHttpRequest')->willReturn($httpRequest);
+        $componentContext->method('getHttpResponse')->willReturn($httpResponse);
+
+        $routerMock = $this->getMockBuilder(Router::class)->disableOriginalConstructor()->setMethods(['route'])->getMock();
+        $routerMock->method('route')->willReturn([]);
 
         $routingComponent = new RoutingComponent();
-        $redirect = $routingComponent->redirectIfNecessary($componentContext, $newUri, $oldUri->getPath());
 
-        $this->assertEquals(false, $redirect);
+        $this->inject($routingComponent, 'router', $routerMock);
+        $this->inject($routingComponent, 'configuration', $configuration);
+
+        $routingComponent->handle($componentContext);
     }
 
     /**
      * @test
      */
-    public function ifPathHasChangesRedirect()
+    public function ifPathHasNoChangesDoNotRedirect(): void
     {
-        $httpRequest = new Request([], [], [], []);
-        $httpResponse = new Response();
-        $componentContext = new ComponentContext($httpRequest, $httpResponse);
+        $configuration = [
+            'enable' => [
+                'trailingSlash' => true,
+                'toLowerCase' => true
+            ],
+        ];
 
-        $oldUri = new Uri('http://dev.local/teST');
-        $newUri = new Uri('http://dev.local/test/');
+        $validPath = 'http://dev.local/validpath/';
+
+        $httpRequest = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->setMethods(['getUri', 'withStatus'])->getMock();
+        $httpRequest->method('getUri')->willReturn(new Uri($validPath));
+
+        $httpResponse = $this->getMockBuilder(Response::class)->disableOriginalConstructor()->setMethods(['withStatus', 'withHeader'])->getMock();
+        $httpResponse->expects($this->never())->method('withStatus');
+        $httpResponse->expects($this->never())->method('withHeader');
+
+        /** @var ComponentContext $componentContext */
+        $componentContext = $this->getMockBuilder(ComponentContext::class)->disableOriginalConstructor()->setMethods(['getHttpRequest', 'getHttpResponse'])->getMock();
+        $componentContext->method('getHttpRequest')->willReturn($httpRequest);
+        $componentContext->method('getHttpResponse')->willReturn($httpResponse);
+
+        $routerMock = $this->getMockBuilder(Router::class)->disableOriginalConstructor()->setMethods(['route'])->getMock();
+        $routerMock->method('route')->willReturn([]);
 
         $routingComponent = new RoutingComponent();
-        $redirect = $routingComponent->redirectIfNecessary($componentContext, $newUri, $oldUri->getPath());
 
-        $this->assertEquals(true, $redirect);
+        $this->inject($routingComponent, 'router', $routerMock);
+        $this->inject($routingComponent, 'configuration', $configuration);
+
+        $routingComponent->handle($componentContext);
     }
 }
