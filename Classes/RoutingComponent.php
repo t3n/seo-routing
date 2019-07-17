@@ -41,6 +41,15 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
      */
     protected $configuration;
 
+    public function __construct(array $options = [])
+    {
+        parent::__construct($options);
+
+        if (! is_array($this->configuration)) {
+            $this->configuration = [];
+        }
+    }
+
     /**
      * Redirect automatically to the trailing slash url or lowered url if activated
      */
@@ -89,16 +98,22 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
         return $uri;
     }
 
-    protected function redirectIfNecessary(ComponentContext $componentContext, UriInterface $uri, string $oldPath): void
+    public function redirectIfNecessary(ComponentContext $componentContext, UriInterface $uri, string $oldPath): bool
     {
         if ($uri->getPath() === $oldPath) {
-            return;
+            return false;
         }
 
+        //set default redirect statusCode if configuration is not set
+        $statusCode = array_key_exists('statusCode', $this->configuration) ? $this->configuration['statusCode'] : 301;
+
         $response = $componentContext->getHttpResponse();
-        $response->setStatus($this->configuration['statusCode']);
-        $response->setHeader('Location', (string) $uri);
+        $response->withStatus((int) $statusCode);
+        $response->withHeader('Location', (string) $uri);
 
         $componentContext->setParameter(ComponentChain::class, 'cancel', true);
+
+        return true;
     }
+
 }
