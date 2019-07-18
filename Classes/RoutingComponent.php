@@ -111,8 +111,8 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
         $statusCode = array_key_exists('statusCode', $this->configuration) ? $this->configuration['statusCode'] : 301;
 
         $response = $componentContext->getHttpResponse();
-        $response->withStatus((int) $statusCode);
-        $response->withHeader('Location', (string) $uri);
+        $response->setStatus((int) $statusCode);
+        $response->setHeader('Location', (string) $uri);
 
         $componentContext->setParameter(ComponentChain::class, 'cancel', true);
 
