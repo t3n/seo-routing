@@ -15,6 +15,19 @@ use t3n\SEO\Routing\RoutingComponent;
 class RoutingComponentTest extends UnitTestCase
 {
     /**
+     * @return mixed[]
+     */
+    public function invalidUrisWithConfig(): array
+    {
+        // invalidUrl, validUrl, trailingSlash, toLowerCase
+        return [
+            ['http://dev.local/invalid', 'http://dev.local/invalid/', true, false],
+            ['http://dev.local/invalId', 'http://dev.local/invalid/', true, true],
+            ['http://dev.local/invalId/', 'http://dev.local/invalid/', false, true]
+        ];
+    }
+
+    /**
      * @test
      */
     public function uriWithSlashGetsNotModifiedForTrailingSlash(): void
@@ -84,25 +97,24 @@ class RoutingComponentTest extends UnitTestCase
 
     /**
      * @test
+     * @dataProvider invalidUrisWithConfig
      */
-    public function ifPathHasChangesRedirect(): void
+    public function ifPathHasChangesRedirect(string $invalidUrl, string $validUrl, bool $trailingSlash, bool $toLowerCase): void
     {
         $configuration = [
             'enable' => [
-                'trailingSlash' => true,
-                'toLowerCase' => true
+                'trailingSlash' => $trailingSlash,
+                'toLowerCase' => $toLowerCase
             ],
         ];
 
-        $invalidPath = 'http://dev.local/invalidPath';
-        $validPath = 'http://dev.local/invalidpath/';
 
         $httpRequest = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->setMethods(['getUri', 'withStatus'])->getMock();
-        $httpRequest->method('getUri')->willReturn(new Uri($invalidPath));
+        $httpRequest->method('getUri')->willReturn(new Uri($invalidUrl));
 
         $httpResponse = $this->getMockBuilder(Response::class)->disableOriginalConstructor()->setMethods(['withStatus', 'withHeader'])->getMock();
         $httpResponse->expects($this->once())->method('withStatus')->with(301);
-        $httpResponse->expects($this->once())->method('withHeader')->with('Location', $validPath);
+        $httpResponse->expects($this->once())->method('withHeader')->with('Location', $validUrl);
 
         /** @var ComponentContext $componentContext */
         $componentContext = $this->getMockBuilder(ComponentContext::class)->disableOriginalConstructor()->setMethods(['getHttpRequest', 'getHttpResponse'])->getMock();
