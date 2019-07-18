@@ -109,12 +109,12 @@ class RoutingComponentTest extends UnitTestCase
         ];
 
 
-        $httpRequest = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->setMethods(['getUri', 'withStatus'])->getMock();
+        $httpRequest = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->setMethods(['getUri', 'setStatus'])->getMock();
         $httpRequest->method('getUri')->willReturn(new Uri($invalidUrl));
 
-        $httpResponse = $this->getMockBuilder(Response::class)->disableOriginalConstructor()->setMethods(['withStatus', 'withHeader'])->getMock();
-        $httpResponse->expects($this->once())->method('withStatus')->with(301);
-        $httpResponse->expects($this->once())->method('withHeader')->with('Location', $validUrl);
+        $httpResponse = $this->getMockBuilder(Response::class)->disableOriginalConstructor()->setMethods(['withStatus', 'setHeader'])->getMock();
+        $httpResponse->expects($this->once())->method('setStatus')->with(301);
+        $httpResponse->expects($this->once())->method('setHeader')->with('Location', $validUrl);
 
         /** @var ComponentContext $componentContext */
         $componentContext = $this->getMockBuilder(ComponentContext::class)->disableOriginalConstructor()->setMethods(['getHttpRequest', 'getHttpResponse'])->getMock();
@@ -146,12 +146,12 @@ class RoutingComponentTest extends UnitTestCase
 
         $validPath = 'http://dev.local/validpath/';
 
-        $httpRequest = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->setMethods(['getUri', 'withStatus'])->getMock();
+        $httpRequest = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->setMethods(['getUri', 'setStatus'])->getMock();
         $httpRequest->method('getUri')->willReturn(new Uri($validPath));
 
-        $httpResponse = $this->getMockBuilder(Response::class)->disableOriginalConstructor()->setMethods(['withStatus', 'withHeader'])->getMock();
-        $httpResponse->expects($this->never())->method('withStatus');
-        $httpResponse->expects($this->never())->method('withHeader');
+        $httpResponse = $this->getMockBuilder(Response::class)->disableOriginalConstructor()->setMethods(['setStatus', 'setHeader'])->getMock();
+        $httpResponse->expects($this->never())->method('setStatus');
+        $httpResponse->expects($this->never())->method('setHeader');
 
         /** @var ComponentContext $componentContext */
         $componentContext = $this->getMockBuilder(ComponentContext::class)->disableOriginalConstructor()->setMethods(['getHttpRequest', 'getHttpResponse'])->getMock();
