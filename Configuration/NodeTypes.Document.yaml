@@ -1,0 +1,6 @@
+'Neos.Neos:Document':
+  properties:
+    uriPathSegment:
+      validation:
+        'Neos.Neos/Validation/RegularExpressionValidator':
+          regularExpression: '/^[a-z0-9\-]+$' #override original regex (removes insensitive)

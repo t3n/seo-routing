@@ -28,6 +28,10 @@ trait BlacklistTrait
 
     protected function matchesBlacklist(UriInterface $uri): bool
     {
+        if (! is_array($this->blacklist)) {
+            return false;
+        }
+
         $path = $uri->getPath();
         foreach ($this->blacklist as $rawPattern => $active) {
             $pattern = '/' . str_replace('/', '\/', $rawPattern) . '/';
