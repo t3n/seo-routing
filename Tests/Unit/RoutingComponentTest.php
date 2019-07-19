@@ -108,11 +108,10 @@ class RoutingComponentTest extends UnitTestCase
             ],
         ];
 
-
         $httpRequest = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->setMethods(['getUri', 'setStatus'])->getMock();
         $httpRequest->method('getUri')->willReturn(new Uri($invalidUrl));
 
-        $httpResponse = $this->getMockBuilder(Response::class)->disableOriginalConstructor()->setMethods(['withStatus', 'setHeader'])->getMock();
+        $httpResponse = $this->getMockBuilder(Response::class)->disableOriginalConstructor()->setMethods(['setStatus', 'setHeader'])->getMock();
         $httpResponse->expects($this->once())->method('setStatus')->with(301);
         $httpResponse->expects($this->once())->method('setHeader')->with('Location', $validUrl);
 
@@ -165,6 +164,86 @@ class RoutingComponentTest extends UnitTestCase
 
         $this->inject($routingComponent, 'router', $routerMock);
         $this->inject($routingComponent, 'configuration', $configuration);
+
+        $routingComponent->handle($componentContext);
+    }
+
+    /**
+     * @test
+     */
+    public function blacklistedUrlShouldNotBeRedirectedToTrailingSlash(): void
+    {
+        $configuration = [
+            'enable' => [
+                'trailingSlash' => true,
+                'toLowerCase' => false
+            ],
+        ];
+
+        $blacklistConfiguration = ['/neos.*' => true];
+
+        $blacklistedUrl = 'http://dev.local/neos/test';
+
+        $httpRequest = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->setMethods(['getUri', 'setStatus'])->getMock();
+        $httpRequest->method('getUri')->willReturn(new Uri($blacklistedUrl));
+
+        $httpResponse = $this->getMockBuilder(Response::class)->disableOriginalConstructor()->setMethods(['setStatus', 'setHeader'])->getMock();
+        $httpResponse->expects($this->never())->method('setStatus');
+        $httpResponse->expects($this->never())->method('setHeader');
+
+        /** @var ComponentContext $componentContext */
+        $componentContext = $this->getMockBuilder(ComponentContext::class)->disableOriginalConstructor()->setMethods(['getHttpRequest', 'getHttpResponse'])->getMock();
+        $componentContext->method('getHttpRequest')->willReturn($httpRequest);
+        $componentContext->method('getHttpResponse')->willReturn($httpResponse);
+
+        $routerMock = $this->getMockBuilder(Router::class)->disableOriginalConstructor()->setMethods(['route'])->getMock();
+        $routerMock->method('route')->willReturn([]);
+
+        $routingComponent = new RoutingComponent();
+
+        $this->inject($routingComponent, 'router', $routerMock);
+        $this->inject($routingComponent, 'configuration', $configuration);
+        $this->inject($routingComponent, 'blacklist', $blacklistConfiguration);
+
+        $routingComponent->handle($componentContext);
+    }
+
+    /**
+     * @test
+     */
+    public function blacklistedUrlShouldNotBeRedirectedToLowerCase(): void
+    {
+        $configuration = [
+            'enable' => [
+                'trailingSlash' => false,
+                'toLowerCase' => true
+            ],
+        ];
+
+        $blacklistConfiguration = ['/neos.*' => true];
+
+        $blacklistedUrl = 'http://dev.local/neos/TEST';
+
+        $httpRequest = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->setMethods(['getUri', 'setStatus'])->getMock();
+        $httpRequest->method('getUri')->willReturn(new Uri($blacklistedUrl));
+
+        $httpResponse = $this->getMockBuilder(Response::class)->disableOriginalConstructor()->setMethods(['setStatus', 'setHeader'])->getMock();
+        $httpResponse->expects($this->never())->method('setStatus');
+        $httpResponse->expects($this->never())->method('setHeader');
+
+        /** @var ComponentContext $componentContext */
+        $componentContext = $this->getMockBuilder(ComponentContext::class)->disableOriginalConstructor()->setMethods(['getHttpRequest', 'getHttpResponse'])->getMock();
+        $componentContext->method('getHttpRequest')->willReturn($httpRequest);
+        $componentContext->method('getHttpResponse')->willReturn($httpResponse);
+
+        $routerMock = $this->getMockBuilder(Router::class)->disableOriginalConstructor()->setMethods(['route'])->getMock();
+        $routerMock->method('route')->willReturn([]);
+
+        $routingComponent = new RoutingComponent();
+
+        $this->inject($routingComponent, 'router', $routerMock);
+        $this->inject($routingComponent, 'configuration', $configuration);
+        $this->inject($routingComponent, 'blacklist', $blacklistConfiguration);
 
         $routingComponent->handle($componentContext);
     }
