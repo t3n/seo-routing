@@ -3,8 +3,8 @@
 # t3n.SEO.Routing
 
 This package has 2 main features:
-- **trailingSlash**: ensure that all links ends with a trailing slash (e.g. `example.com/test/ instead of `example.com/test)
-- **toLowerCase**: ensure that camelCase links gets redirected to lowercase (e.g. `exmaple.com/lowercase` instead of `exmaple.com/lowerCase` )
+- **trailingSlash**: ensure that all links ends with a trailing slash (e.g. `example.com/test/` instead of `example.com/test`)
+- **toLowerCase**: ensure that camelCase links gets redirected to lowercase (e.g. `exmaple.com/lowercase` instead of `exmaple.com/lowerCase`)
 
 You can de- and activate both of them.
 
