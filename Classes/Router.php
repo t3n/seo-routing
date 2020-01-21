@@ -15,7 +15,6 @@ namespace t3n\SEO\Routing;
  */
 
 use Neos\Flow\Annotations as Flow;
-use Neos\Flow\Http\Uri;
 use Neos\Flow\Mvc\Routing\Dto\ResolveContext;
 use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
@@ -25,8 +24,9 @@ class Router extends \Neos\Flow\Mvc\Routing\Router
     use BlacklistTrait;
 
     /**
-     * @var UriFactoryInterface
      * @Flow\Inject
+     *
+     * @var UriFactoryInterface
      */
     protected $uriFactory;
 

@@ -14,12 +14,11 @@ namespace t3n\SEO\Routing;
  * source code.
  */
 
-use Neos\Flow\Annotations as Flow;
 use GuzzleHttp\Psr7\Response;
+use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Http\Component\ComponentChain;
 use Neos\Flow\Http\Component\ComponentContext;
 use Neos\Flow\Mvc\Routing\RouterInterface;
-use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
@@ -39,8 +38,9 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
     protected $router;
 
     /**
-     * @var UriFactoryInterface
      * @Flow\Inject
+     *
+     * @var UriFactoryInterface
      */
     protected $uriFactory;
 
@@ -96,7 +96,7 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
         }
 
         if ($this->matchesBlacklist($uri) === false && ! array_key_exists('extension', pathinfo($uri->getPath()))) {
-            $uri = $this->uriFactory->createUri((string)$uri . '/');
+            $uri = $this->uriFactory->createUri((string) $uri . '/');
         }
 
         return $uri;
