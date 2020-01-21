@@ -15,9 +15,13 @@ namespace t3n\SEO\Routing;
  */
 
 use Neos\Flow\Annotations as Flow;
+use GuzzleHttp\Psr7\Response;
 use Neos\Flow\Http\Component\ComponentChain;
 use Neos\Flow\Http\Component\ComponentContext;
 use Neos\Flow\Mvc\Routing\RouterInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
 
 class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
@@ -33,6 +37,18 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
      * @var RouterInterface
      */
     protected $router;
+
+    /**
+     * @var UriFactoryInterface
+     * @Flow\Inject
+     */
+    protected $uriFactory;
+
+    /**
+     * @var ResponseFactoryInterface
+     * @Flow\Inject
+     */
+    protected $responseFactory;
 
     /**
      * @Flow\InjectConfiguration("redirect")
@@ -61,7 +77,9 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
         $trailingSlashIsEnabled = isset($this->configuration['enable']['trailingSlash']) ? $this->configuration['enable']['trailingSlash'] === true : false;
         $toLowerCaseIsEnabled = isset($this->configuration['enable']['toLowerCase']) ? $this->configuration['enable']['toLowerCase'] === true : false;
 
+        /** @var UriInterface $uri */
         $uri = $componentContext->getHttpRequest()->getUri();
+
         $oldPath = $uri->getPath();
 
         if ($trailingSlashIsEnabled) {
@@ -84,7 +102,7 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
         }
 
         if ($this->matchesBlacklist($uri) === false && ! array_key_exists('extension', pathinfo($uri->getPath()))) {
-            $uri->setPath($uri->getPath() . '/');
+            $uri = $this->uriFactory->createUri((string)$uri . '/');
         }
 
         return $uri;
@@ -110,10 +128,10 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
         //set default redirect statusCode if configuration is not set
         $statusCode = array_key_exists('statusCode', $this->configuration) ? $this->configuration['statusCode'] : 301;
 
-        $response = $componentContext->getHttpResponse();
-        $response->setStatus((int) $statusCode);
-        $response->setHeader('Location', (string) $uri);
+        /** @var ResponseInterface $response */
+        $response = new Response($statusCode, ['Location' => (string) $uri]);
 
+        $componentContext->replaceHttpResponse($response);
         $componentContext->setParameter(ComponentChain::class, 'cancel', true);
 
         return;

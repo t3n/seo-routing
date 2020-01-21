@@ -14,13 +14,21 @@ namespace t3n\SEO\Routing;
  * source code.
  */
 
+use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Http\Uri;
 use Neos\Flow\Mvc\Routing\Dto\ResolveContext;
+use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
 
 class Router extends \Neos\Flow\Mvc\Routing\Router
 {
     use BlacklistTrait;
+
+    /**
+     * @var UriFactoryInterface
+     * @Flow\Inject
+     */
+    protected $uriFactory;
 
     /**
      * Resolves the current uri and ensures that a trailing slash is present
@@ -31,7 +39,7 @@ class Router extends \Neos\Flow\Mvc\Routing\Router
 
         if ($this->matchesBlacklist($uri) === false && isset(pathinfo((string) $uri)['extension']) === false) {
             // $uri needs to be re-parsed, because the path often contains the query
-            $parsedUri = new Uri((string) $uri);
+            $parsedUri = $this->uriFactory->createUri((string) $uri);
             return $parsedUri->withPath(rtrim($parsedUri->getPath(), '/') . '/');
         }
 
