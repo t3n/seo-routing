@@ -45,12 +45,6 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
     protected $uriFactory;
 
     /**
-     * @var ResponseFactoryInterface
-     * @Flow\Inject
-     */
-    protected $responseFactory;
-
-    /**
      * @Flow\InjectConfiguration("redirect")
      *
      * @var mixed[]
