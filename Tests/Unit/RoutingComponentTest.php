@@ -33,6 +33,7 @@ class RoutingComponentTest extends UnitTestCase
      */
     public function uriWithSlashGetsNotModifiedForTrailingSlash(): void
     {
+        /** @var UriFactory $uriFactory */
         $uriFactory = $this->getMockBuilder(UriFactory::class)
             ->enableOriginalConstructor()
             ->enableProxyingToOriginalMethods()
@@ -41,7 +42,7 @@ class RoutingComponentTest extends UnitTestCase
         $routingComponent = new RoutingComponent();
         $this->inject($routingComponent, 'uriFactory', $uriFactory);
 
-        $uri = new Uri('http://dev.local/testpath/');
+        $uri = $uriFactory->createUri('http://dev.local/testpath/');
         $newUri = $routingComponent->handleTrailingSlash($uri);
 
         $this->assertEquals($uri, $newUri);
@@ -52,6 +53,7 @@ class RoutingComponentTest extends UnitTestCase
      */
     public function uriWithOutSlashGetsModifiedForTrailingSlash(): void
     {
+        /** @var UriFactory $uriFactory */
         $uriFactory = $this->getMockBuilder(UriFactory::class)
             ->enableOriginalConstructor()
             ->enableProxyingToOriginalMethods()
@@ -60,7 +62,7 @@ class RoutingComponentTest extends UnitTestCase
         $routingComponent = new RoutingComponent();
         $this->inject($routingComponent, 'uriFactory', $uriFactory);
 
-        $uri = new Uri('http://dev.local/testpath');
+        $uri = $uriFactory->createUri('http://dev.local/testpath');
         $newUri = $routingComponent->handleTrailingSlash($uri);
 
         $this->assertStringEndsWith('/', (string) $newUri);
@@ -71,6 +73,8 @@ class RoutingComponentTest extends UnitTestCase
      */
     public function uriWithLoweredPathGetsNotModified(): void
     {
+
+        /** @var UriFactory $uriFactory */
         $uriFactory = $this->getMockBuilder(UriFactory::class)
             ->enableOriginalConstructor()
             ->enableProxyingToOriginalMethods()
@@ -79,7 +83,7 @@ class RoutingComponentTest extends UnitTestCase
         $routingComponent = new RoutingComponent();
         $this->inject($routingComponent, 'uriFactory', $uriFactory);
 
-        $uri = new Uri('http://dev.local/testpath/');
+        $uri = $uriFactory->createUri('http://dev.local/testpath/');
         $newUri = $routingComponent->handleToLowerCase($uri);
 
         $this->assertEquals($uri, $newUri);
@@ -90,6 +94,7 @@ class RoutingComponentTest extends UnitTestCase
      */
     public function uriWithCamelCasePathGetsModifiedToLowereCase(): void
     {
+        /** @var UriFactory $uriFactory */
         $uriFactory = $this->getMockBuilder(UriFactory::class)
             ->enableOriginalConstructor()
             ->enableProxyingToOriginalMethods()
@@ -99,7 +104,7 @@ class RoutingComponentTest extends UnitTestCase
         $this->inject($routingComponent, 'uriFactory', $uriFactory);
 
         $camelCasePath = '/testPath/';
-        $uri = new Uri('http://dev.local' . $camelCasePath);
+        $uri = $uriFactory->createUri('http://dev.local' . $camelCasePath);
         $newUri = $routingComponent->handleToLowerCase($uri);
 
         $this->assertNotEquals($camelCasePath, $newUri->getPath());
@@ -111,6 +116,7 @@ class RoutingComponentTest extends UnitTestCase
      */
     public function uriWithSpecialCharsDoesNotThrowAnException(): void
     {
+        /** @var UriFactory $uriFactory */
         $uriFactory = $this->getMockBuilder(UriFactory::class)
             ->enableOriginalConstructor()
             ->enableProxyingToOriginalMethods()
@@ -119,7 +125,7 @@ class RoutingComponentTest extends UnitTestCase
         $routingComponent = new RoutingComponent();
         $this->inject($routingComponent, 'uriFactory', $uriFactory);
 
-        $uri = new Uri('http://dev.local/äß&/');
+        $uri = $uriFactory->createUri('http://dev.local/äß&/');
         $newUri = $routingComponent->handleToLowerCase($uri);
         $newUri = $routingComponent->handleTrailingSlash($newUri);
 
@@ -158,6 +164,7 @@ class RoutingComponentTest extends UnitTestCase
         $routerMock = $this->getMockBuilder(Router::class)->disableOriginalConstructor()->setMethods(['route'])->getMock();
         $routerMock->method('route')->willReturn([]);
 
+        /** @var UriFactory $uriFactory */
         $uriFactory = $this->getMockBuilder(UriFactory::class)
             ->enableOriginalConstructor()
             ->enableProxyingToOriginalMethods()
@@ -209,6 +216,7 @@ class RoutingComponentTest extends UnitTestCase
         $routerMock = $this->getMockBuilder(Router::class)->disableOriginalConstructor()->setMethods(['route'])->getMock();
         $routerMock->method('route')->willReturn([]);
 
+        /** @var UriFactory $uriFactory */
         $uriFactory = $this->getMockBuilder(UriFactory::class)
             ->enableOriginalConstructor()
             ->enableProxyingToOriginalMethods()
@@ -260,6 +268,7 @@ class RoutingComponentTest extends UnitTestCase
         $routerMock = $this->getMockBuilder(Router::class)->disableOriginalConstructor()->setMethods(['route'])->getMock();
         $routerMock->method('route')->willReturn([]);
 
+        /** @var UriFactory $uriFactory */
         $uriFactory = $this->getMockBuilder(UriFactory::class)
             ->enableOriginalConstructor()
             ->enableProxyingToOriginalMethods()
@@ -313,6 +322,7 @@ class RoutingComponentTest extends UnitTestCase
         $routerMock = $this->getMockBuilder(Router::class)->disableOriginalConstructor()->setMethods(['route'])->getMock();
         $routerMock->method('route')->willReturn([]);
 
+        /** @var UriFactory $uriFactory */
         $uriFactory = $this->getMockBuilder(UriFactory::class)
             ->enableOriginalConstructor()
             ->enableProxyingToOriginalMethods()
