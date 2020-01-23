@@ -107,7 +107,8 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
         $loweredPath = strtolower($uri->getPath());
 
         if ($this->matchesBlacklist($uri) === false && $uri->getPath() !== $loweredPath) {
-            $uri->setPath($loweredPath);
+            $newUri = str_replace($uri->getPath(), $loweredPath, (string) $uri);
+            $uri = $this->uriFactory->createUri($newUri);
         }
 
         return $uri;
