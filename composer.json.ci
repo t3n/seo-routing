@@ -1,16 +1,12 @@
 {
   "name": "t3n/test-setup",
   "description": "Test setup for flow packages",
-  "repositories": [
-    {
-      "type": "git",
-      "url": "git@github.com:t3n/seo-routing.git"
-    },
-    {
+  "repositories": {
+    "srcPackage": {
       "type": "path",
       "url": "./seo-routing"
     }
-  ],
+  },
   "minimum-stability": "dev",
   "prefer-stable": true,
   "config": {

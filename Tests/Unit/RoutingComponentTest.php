@@ -129,7 +129,7 @@ class RoutingComponentTest extends UnitTestCase
         $newUri = $routingComponent->handleToLowerCase($uri);
         $newUri = $routingComponent->handleTrailingSlash($newUri);
 
-        $this->assertEquals($uri, $newUri);
+        $this->assertEquals(strtolower((string) $uri), $newUri);
     }
 
     /**
