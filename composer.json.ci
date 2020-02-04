@@ -19,7 +19,7 @@
     "t3n/seo-routing": "@dev"
   },
   "require-dev": {
-    "t3n/coding-standard": "~1.0.0",
+    "t3n/coding-standard": "~1.1.0",
     "phpunit/phpunit": "~8.5",
     "mikey179/vfsstream": "~1.6"
   },
