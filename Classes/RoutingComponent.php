@@ -123,8 +123,8 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
         //set default redirect statusCode if configuration is not set
         $statusCode = array_key_exists('statusCode', $this->configuration) ? $this->configuration['statusCode'] : 301;
 
-        /** @var ResponseInterface $response */
-        $response = new Response((int) $statusCode, ['Location' => (string) $uri]);
+        $response = $componentContext->getHttpResponse()->withStatus($statusCode);
+        $response = $response->withAddedHeader('Location', (string) $uri);
 
         $componentContext->replaceHttpResponse($response);
         $componentContext->setParameter(ComponentChain::class, 'cancel', true);
