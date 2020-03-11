@@ -14,12 +14,10 @@ namespace t3n\SEO\Routing;
  * source code.
  */
 
-use GuzzleHttp\Psr7\Response;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Http\Component\ComponentChain;
 use Neos\Flow\Http\Component\ComponentContext;
 use Neos\Flow\Mvc\Routing\RouterInterface;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
 
@@ -84,7 +82,7 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
             $uri = $this->handleToLowerCase($uri);
         }
 
-        $this->redirectIfNecessary($componentContext, $uri, $oldPath);
+        $componentContext = $this->redirectIfNecessary($componentContext, $uri, $oldPath);
 
         parent::handle($componentContext);
     }
@@ -114,10 +112,10 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
         return $uri;
     }
 
-    protected function redirectIfNecessary(ComponentContext $componentContext, UriInterface $uri, string $oldPath): void
+    protected function redirectIfNecessary(ComponentContext $componentContext, UriInterface $uri, string $oldPath): ComponentContext
     {
         if ($uri->getPath() === $oldPath) {
-            return;
+            return $componentContext;
         }
 
         //set default redirect statusCode if configuration is not set
@@ -129,6 +127,6 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
         $componentContext->replaceHttpResponse($response);
         $componentContext->setParameter(ComponentChain::class, 'cancel', true);
 
-        return;
+        return $componentContext;
     }
 }
