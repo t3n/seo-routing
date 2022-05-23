@@ -14,14 +14,16 @@ namespace t3n\SEO\Routing;
  * source code.
  */
 
+use GuzzleHttp\Psr7\Response;
 use Neos\Flow\Annotations as Flow;
-use Neos\Flow\Http\Component\ComponentChain;
-use Neos\Flow\Http\Component\ComponentContext;
 use Neos\Flow\Mvc\Routing\RouterInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
-class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
+class RoutingMiddleware extends \Neos\Flow\Mvc\Routing\RoutingMiddleware
 {
     use BlacklistTrait;
 
@@ -47,30 +49,14 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
      *
      * @var mixed[]
      */
-    protected $configuration;
+    protected $configuration = [];
 
-    /**
-     * @param mixed[] $options
-     */
-    public function __construct(array $options = [])
-    {
-        parent::__construct($options);
-
-        if (! is_array($this->configuration)) {
-            $this->configuration = [];
-        }
-    }
-
-    /**
-     * Redirect automatically to the trailing slash url or lowered url if activated
-     */
-    public function handle(ComponentContext $componentContext): void
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $trailingSlashIsEnabled = isset($this->configuration['enable']['trailingSlash']) ? $this->configuration['enable']['trailingSlash'] === true : false;
         $toLowerCaseIsEnabled = isset($this->configuration['enable']['toLowerCase']) ? $this->configuration['enable']['toLowerCase'] === true : false;
 
-        /** @var UriInterface $uri */
-        $uri = $componentContext->getHttpRequest()->getUri();
+        $uri = $request->getUri();
 
         $oldPath = $uri->getPath();
 
@@ -82,9 +68,12 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
             $uri = $this->handleToLowerCase($uri);
         }
 
-        $componentContext = $this->redirectIfNecessary($componentContext, $uri, $oldPath);
+        $response = $this->redirectIfNecessary($uri, $oldPath);
+        if ($response !== null) {
+            return $response;
+        }
 
-        parent::handle($componentContext);
+        return parent::process($request->withUri($uri), $handler);
     }
 
     public function handleTrailingSlash(UriInterface $uri): UriInterface
@@ -112,21 +101,16 @@ class RoutingComponent extends \Neos\Flow\Mvc\Routing\RoutingComponent
         return $uri;
     }
 
-    protected function redirectIfNecessary(ComponentContext $componentContext, UriInterface $uri, string $oldPath): ComponentContext
+    protected function redirectIfNecessary(UriInterface $uri, string $oldPath): ?ResponseInterface
     {
         if ($uri->getPath() === $oldPath) {
-            return $componentContext;
+            return null;
         }
 
         //set default redirect statusCode if configuration is not set
         $statusCode = array_key_exists('statusCode', $this->configuration) ? $this->configuration['statusCode'] : 301;
+        $response = new Response($statusCode);
 
-        $response = $componentContext->getHttpResponse()->withStatus($statusCode);
-        $response = $response->withAddedHeader('Location', (string) $uri);
-
-        $componentContext->replaceHttpResponse($response);
-        $componentContext->setParameter(ComponentChain::class, 'cancel', true);
-
-        return $componentContext;
+        return $response->withAddedHeader('Location', (string) $uri);
     }
 }

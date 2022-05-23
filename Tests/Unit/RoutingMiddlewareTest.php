@@ -7,13 +7,15 @@ namespace t3n\SEO\Routing\Tests\Unit;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\ServerRequest;
 use GuzzleHttp\Psr7\Uri;
-use Neos\Flow\Http\Component\ComponentContext;
 use Neos\Flow\Mvc\Routing\Router;
 use Neos\Flow\Tests\UnitTestCase;
 use Neos\Http\Factories\UriFactory;
-use t3n\SEO\Routing\RoutingComponent;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use t3n\SEO\Routing\RoutingMiddleware;
 
-class RoutingComponentTest extends UnitTestCase
+class RoutingMiddlewareTest extends UnitTestCase
 {
     /**
      * @return mixed[]
@@ -39,11 +41,11 @@ class RoutingComponentTest extends UnitTestCase
             ->enableProxyingToOriginalMethods()
             ->getMock();
 
-        $routingComponent = new RoutingComponent();
-        $this->inject($routingComponent, 'uriFactory', $uriFactory);
+        $routingMiddleware = new RoutingMiddleware();
+        $this->inject($routingMiddleware, 'uriFactory', $uriFactory);
 
         $uri = $uriFactory->createUri('http://dev.local/testpath/');
-        $newUri = $routingComponent->handleTrailingSlash($uri);
+        $newUri = $routingMiddleware->handleTrailingSlash($uri);
 
         $this->assertEquals($uri, $newUri);
     }
@@ -59,11 +61,11 @@ class RoutingComponentTest extends UnitTestCase
             ->enableProxyingToOriginalMethods()
             ->getMock();
 
-        $routingComponent = new RoutingComponent();
-        $this->inject($routingComponent, 'uriFactory', $uriFactory);
+        $routingMiddleware = new RoutingMiddleware();
+        $this->inject($routingMiddleware, 'uriFactory', $uriFactory);
 
         $uri = $uriFactory->createUri('http://dev.local/testpath');
-        $newUri = $routingComponent->handleTrailingSlash($uri);
+        $newUri = $routingMiddleware->handleTrailingSlash($uri);
 
         $this->assertStringEndsWith('/', (string) $newUri);
     }
@@ -80,11 +82,11 @@ class RoutingComponentTest extends UnitTestCase
             ->enableProxyingToOriginalMethods()
             ->getMock();
 
-        $routingComponent = new RoutingComponent();
-        $this->inject($routingComponent, 'uriFactory', $uriFactory);
+        $routingMiddleware = new RoutingMiddleware();
+        $this->inject($routingMiddleware, 'uriFactory', $uriFactory);
 
         $uri = $uriFactory->createUri('http://dev.local/testpath/');
-        $newUri = $routingComponent->handleToLowerCase($uri);
+        $newUri = $routingMiddleware->handleToLowerCase($uri);
 
         $this->assertEquals($uri, $newUri);
     }
@@ -100,12 +102,12 @@ class RoutingComponentTest extends UnitTestCase
             ->enableProxyingToOriginalMethods()
             ->getMock();
 
-        $routingComponent = new RoutingComponent();
-        $this->inject($routingComponent, 'uriFactory', $uriFactory);
+        $routingMiddleware = new RoutingMiddleware();
+        $this->inject($routingMiddleware, 'uriFactory', $uriFactory);
 
         $camelCasePath = '/testPath/';
         $uri = $uriFactory->createUri('http://dev.local' . $camelCasePath);
-        $newUri = $routingComponent->handleToLowerCase($uri);
+        $newUri = $routingMiddleware->handleToLowerCase($uri);
 
         $this->assertNotEquals($camelCasePath, $newUri->getPath());
         $this->assertEquals(strtolower($camelCasePath), $newUri->getPath());
@@ -122,12 +124,12 @@ class RoutingComponentTest extends UnitTestCase
             ->enableProxyingToOriginalMethods()
             ->getMock();
 
-        $routingComponent = new RoutingComponent();
-        $this->inject($routingComponent, 'uriFactory', $uriFactory);
+        $routingMiddleware = new RoutingMiddleware();
+        $this->inject($routingMiddleware, 'uriFactory', $uriFactory);
 
         $uri = $uriFactory->createUri('http://dev.local/äß&/');
-        $newUri = $routingComponent->handleToLowerCase($uri);
-        $newUri = $routingComponent->handleTrailingSlash($newUri);
+        $newUri = $routingMiddleware->handleToLowerCase($uri);
+        $newUri = $routingMiddleware->handleTrailingSlash($newUri);
 
         $this->assertEquals(strtolower((string) $uri), $newUri);
     }
@@ -145,21 +147,8 @@ class RoutingComponentTest extends UnitTestCase
             ],
         ];
 
-        $httpRequest = $this->getMockBuilder(ServerRequest::class)->disableOriginalConstructor()->setMethods(['getUri'])->getMock();
-        $httpRequest->method('getUri')->willReturn(new Uri($invalidUrl));
-
-        $httpResponse = $this->getMockBuilder(Response::class)
-            ->enableOriginalConstructor()
-            ->setConstructorArgs([200])
-            ->enableProxyingToOriginalMethods()
-            ->getMock();
-
-        /** @var ComponentContext $componentContext */
-        $componentContext = $this->getMockBuilder(ComponentContext::class)
-            ->enableOriginalConstructor()
-            ->setConstructorArgs([$httpRequest, $httpResponse])
-            ->enableProxyingToOriginalMethods()
-            ->getMock();
+        $request = self::getRequest($invalidUrl);
+        $handler = self::getRequestHandlerWithResponse();
 
         $routerMock = $this->getMockBuilder(Router::class)->disableOriginalConstructor()->setMethods(['route'])->getMock();
         $routerMock->method('route')->willReturn([]);
@@ -170,16 +159,16 @@ class RoutingComponentTest extends UnitTestCase
             ->enableProxyingToOriginalMethods()
             ->getMock();
 
-        $routingComponent = new RoutingComponent();
+        $routingMiddleware = new RoutingMiddleware();
 
-        $this->inject($routingComponent, 'router', $routerMock);
-        $this->inject($routingComponent, 'configuration', $configuration);
-        $this->inject($routingComponent, 'uriFactory', $uriFactory);
+        $this->inject($routingMiddleware, 'router', $routerMock);
+        $this->inject($routingMiddleware, 'configuration', $configuration);
+        $this->inject($routingMiddleware, 'uriFactory', $uriFactory);
 
-        $routingComponent->handle($componentContext);
+        $response = $routingMiddleware->process($request, $handler);
 
-        $this->assertEquals("301", $componentContext->getHttpResponse()->getStatusCode());
-        $this->assertEquals("http://dev.local/invalid/", $componentContext->getHttpResponse()->getHeader('Location')[0]);
+        $this->assertEquals("301", $response->getStatusCode());
+        $this->assertEquals("http://dev.local/invalid/", $response->getHeader('Location')[0]);
 
     }
 
@@ -197,21 +186,8 @@ class RoutingComponentTest extends UnitTestCase
 
         $validPath = 'http://dev.local/validpath/';
 
-        $httpRequest = $this->getMockBuilder(ServerRequest::class)->disableOriginalConstructor()->setMethods(['getUri'])->getMock();
-        $httpRequest->method('getUri')->willReturn(new Uri($validPath));
-
-        $httpResponse = $this->getMockBuilder(Response::class)
-            ->enableOriginalConstructor()
-            ->setConstructorArgs([200])
-            ->enableProxyingToOriginalMethods()
-            ->getMock();
-
-        /** @var ComponentContext $componentContext */
-        $componentContext = $this->getMockBuilder(ComponentContext::class)
-            ->enableOriginalConstructor()
-            ->setConstructorArgs([$httpRequest, $httpResponse])
-            ->enableProxyingToOriginalMethods()
-            ->getMock();
+        $request = self::getRequest($validPath);
+        $handler = self::getRequestHandlerWithResponse();
 
         $routerMock = $this->getMockBuilder(Router::class)->disableOriginalConstructor()->setMethods(['route'])->getMock();
         $routerMock->method('route')->willReturn([]);
@@ -222,15 +198,15 @@ class RoutingComponentTest extends UnitTestCase
             ->enableProxyingToOriginalMethods()
             ->getMock();
 
-        $routingComponent = new RoutingComponent();
+        $routingMiddleware = new RoutingMiddleware();
 
-        $this->inject($routingComponent, 'router', $routerMock);
-        $this->inject($routingComponent, 'configuration', $configuration);
-        $this->inject($routingComponent, 'uriFactory', $uriFactory);
+        $this->inject($routingMiddleware, 'router', $routerMock);
+        $this->inject($routingMiddleware, 'configuration', $configuration);
+        $this->inject($routingMiddleware, 'uriFactory', $uriFactory);
 
-        $routingComponent->handle($componentContext);
+        $response = $routingMiddleware->process($request, $handler);
 
-        $this->assertEquals("200", $componentContext->getHttpResponse()->getStatusCode());
+        $this->assertEquals("200", $response->getStatusCode());
     }
 
     /**
@@ -249,21 +225,8 @@ class RoutingComponentTest extends UnitTestCase
 
         $blacklistedUrl = 'http://dev.local/neos/test';
 
-        $httpRequest = $this->getMockBuilder(ServerRequest::class)->disableOriginalConstructor()->setMethods(['getUri'])->getMock();
-        $httpRequest->method('getUri')->willReturn(new Uri($blacklistedUrl));
-
-        $httpResponse = $this->getMockBuilder(Response::class)
-            ->enableOriginalConstructor()
-            ->setConstructorArgs([200])
-            ->enableProxyingToOriginalMethods()
-            ->getMock();
-
-        /** @var ComponentContext $componentContext */
-        $componentContext = $this->getMockBuilder(ComponentContext::class)
-            ->enableOriginalConstructor()
-            ->setConstructorArgs([$httpRequest, $httpResponse])
-            ->enableProxyingToOriginalMethods()
-            ->getMock();
+        $request = self::getRequest($blacklistedUrl);
+        $handler = self::getRequestHandlerWithResponse();
 
         $routerMock = $this->getMockBuilder(Router::class)->disableOriginalConstructor()->setMethods(['route'])->getMock();
         $routerMock->method('route')->willReturn([]);
@@ -274,17 +237,17 @@ class RoutingComponentTest extends UnitTestCase
             ->enableProxyingToOriginalMethods()
             ->getMock();
 
-        $routingComponent = new RoutingComponent();
+        $routingMiddleware = new RoutingMiddleware();
 
-        $this->inject($routingComponent, 'router', $routerMock);
-        $this->inject($routingComponent, 'configuration', $configuration);
-        $this->inject($routingComponent, 'blacklist', $blacklistConfiguration);
-        $this->inject($routingComponent, 'uriFactory', $uriFactory);
+        $this->inject($routingMiddleware, 'router', $routerMock);
+        $this->inject($routingMiddleware, 'configuration', $configuration);
+        $this->inject($routingMiddleware, 'blacklist', $blacklistConfiguration);
+        $this->inject($routingMiddleware, 'uriFactory', $uriFactory);
 
-        $routingComponent->handle($componentContext);
+        $response = $routingMiddleware->process($request, $handler);
 
-        $this->assertEquals("200", $componentContext->getHttpResponse()->getStatusCode());
-        $this->assertEquals([], $componentContext->getHttpResponse()->getHeader('Location'));
+        $this->assertEquals("200", $response->getStatusCode());
+        $this->assertEquals([], $response->getHeader('Location'));
     }
 
     /**
@@ -303,21 +266,8 @@ class RoutingComponentTest extends UnitTestCase
 
         $blacklistedUrl = 'http://dev.local/neos/TEST';
 
-        $httpRequest = $this->getMockBuilder(ServerRequest::class)->disableOriginalConstructor()->setMethods(['getUri'])->getMock();
-        $httpRequest->method('getUri')->willReturn(new Uri($blacklistedUrl));
-
-        $httpResponse = $this->getMockBuilder(Response::class)
-            ->enableOriginalConstructor()
-            ->setConstructorArgs([200])
-            ->enableProxyingToOriginalMethods()
-            ->getMock();
-
-        /** @var ComponentContext $componentContext */
-        $componentContext = $this->getMockBuilder(ComponentContext::class)
-            ->enableOriginalConstructor()
-            ->setConstructorArgs([$httpRequest, $httpResponse])
-            ->enableProxyingToOriginalMethods()
-            ->getMock();
+        $request = self::getRequest($blacklistedUrl);
+        $handler = self::getRequestHandlerWithResponse();
 
         $routerMock = $this->getMockBuilder(Router::class)->disableOriginalConstructor()->setMethods(['route'])->getMock();
         $routerMock->method('route')->willReturn([]);
@@ -328,16 +278,33 @@ class RoutingComponentTest extends UnitTestCase
             ->enableProxyingToOriginalMethods()
             ->getMock();
 
-        $routingComponent = new RoutingComponent();
+        $routingMiddleware = new RoutingMiddleware();
 
-        $this->inject($routingComponent, 'router', $routerMock);
-        $this->inject($routingComponent, 'configuration', $configuration);
-        $this->inject($routingComponent, 'blacklist', $blacklistConfiguration);
-        $this->inject($routingComponent, 'uriFactory', $uriFactory);
+        $this->inject($routingMiddleware, 'router', $routerMock);
+        $this->inject($routingMiddleware, 'configuration', $configuration);
+        $this->inject($routingMiddleware, 'blacklist', $blacklistConfiguration);
+        $this->inject($routingMiddleware, 'uriFactory', $uriFactory);
 
-        $routingComponent->handle($componentContext);
+        $response = $routingMiddleware->process($request, $handler);
 
-        $this->assertEquals("200", $componentContext->getHttpResponse()->getStatusCode());
-        $this->assertEquals([], $componentContext->getHttpResponse()->getHeader('Location'));
+        $this->assertEquals("200", $response->getStatusCode());
+        $this->assertEquals([], $response->getHeader('Location'));
+    }
+
+    protected static function getRequest(string $requestPath): ServerRequestInterface
+    {
+        $request = ServerRequest::fromGlobals();
+
+        return $request->withUri(new Uri($requestPath));
+    }
+
+    protected static function getRequestHandlerWithResponse(): RequestHandlerInterface
+    {
+        return new class implements RequestHandlerInterface {
+            public function handle(ServerRequestInterface $request): ResponseInterface
+            {
+                return new Response(200);
+            }
+        };
     }
 }
