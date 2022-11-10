@@ -14,8 +14,8 @@
     "bin-dir": "bin"
   },
   "require": {
-    "neos/flow": "~6.0",
-    "neos/buildessentials": "~6.0",
+    "neos/flow": "~7.3",
+    "neos/buildessentials": "~7.3",
     "t3n/seo-routing": "@dev"
   },
   "require-dev": {

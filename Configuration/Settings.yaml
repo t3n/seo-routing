@@ -12,8 +12,6 @@ t3n:
 Neos:
   Flow:
     http:
-      chain:
-        process:
-          chain:
-            routing:
-              component: 't3n\SEO\Routing\RoutingComponent'
+      middlewares:
+        'routing':
+          middleware: 't3n\SEO\Routing\RoutingMiddleware'
