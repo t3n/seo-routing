@@ -78,12 +78,13 @@ class RoutingMiddleware extends \Neos\Flow\Mvc\Routing\RoutingMiddleware
 
     public function handleTrailingSlash(UriInterface $uri): UriInterface
     {
-        if (strlen($uri->getPath()) === 0 || $uri->getPath()[-1] === '/') {
+        if (strlen($uri->getPath()) === 0) {
             return $uri;
         }
 
         if ($this->matchesBlacklist($uri) === false && ! array_key_exists('extension', pathinfo($uri->getPath()))) {
-            $uri = $this->uriFactory->createUri((string) $uri . '/');
+            $parsedUri = $this->uriFactory->createUri((string) $uri . '/');
+            return $parsedUri->withPath(rtrim($parsedUri->getPath(), '/') . '/');
         }
 
         return $uri;
