@@ -7,8 +7,8 @@
         "bin-dir": "bin"
     },
     "require": {
-        "neos/flow": "^7.3",
-        "guzzlehttp/psr7": "^1.8"
+        "neos/flow": "^7.3 || ^8.0",
+        "guzzlehttp/psr7": "^1.8 || ^2.4"
     },
     "require-dev": {
         "t3n/coding-standard": "~1.1.0"
